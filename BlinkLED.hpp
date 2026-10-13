@@ -3,31 +3,23 @@
 // clang-format off
 /* === MODULE MANIFEST V2 ===
 module_description: 控制 LED 闪烁的简单模块 / A simple module to control LED blinking
-constructor_args:
-  - blink_cycle: 250
-template_args: []
-required_hardware: led/LED/led1/LED1
 depends: []
 === END MANIFEST === */
 // clang-format on
 
-#include "app_framework.hpp"
 #include "gpio.hpp"
+#include "libxr.hpp"
 #include "libxr_assert.hpp"
 #include "libxr_cb.hpp"
 #include "libxr_def.hpp"
 #include "timer.hpp"
 
-class BlinkLED : public LibXR::Application {
+class BlinkLED {
  public:
-  BlinkLED(LibXR::HardwareContainer& hw, LibXR::ApplicationManager& app,
-           uint32_t blink_cycle)
-      : led_(hw.template FindOrExit<LibXR::GPIO>(
-            {"led", "LED", "led1", "LED1"})),
+  BlinkLED(LibXR::GPIO& led, uint32_t blink_cycle)
+      : led_((&led)),
         timer_handle_(
             LibXR::Timer::CreateTask(BlinkTaskFun, this, blink_cycle)) {
-    UNUSED(app);
-
     LibXR::Timer::Add(timer_handle_);
     LibXR::Timer::Start(timer_handle_);
 
@@ -61,7 +53,7 @@ class BlinkLED : public LibXR::Application {
     blink->led_->Write(blink->flag_);
   }
 
-  void OnMonitor() override {}
+  void OnMonitor() {}
 
  private:
   bool flag_ = false;
